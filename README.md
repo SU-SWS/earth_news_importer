@@ -1,9 +1,9 @@
 # [Earth News Importer](https://github.com/SU-SWS/earth_news_importer)
-##### Version: 8.x-1.x-dev
+##### Version: 1.x-dev
 
 Maintainers: [ksharp](https://github.com/ksharp-drupal)
 
-Changelog: [Changelog.txt](CHANGELOG.txt)
+Changelog: [CHANGELOG.md](CHANGELOG.md)
 
 Description
 ---
@@ -13,7 +13,7 @@ The Earth News Importer defines Drupal migrate process plugins to assist in the 
 Accessibility
 ---
 [![WCAG Conformance 2.0 AA Badge](https://www.w3.org/WAI/wcag2AA-blue.png)](https://www.w3.org/TR/WCAG20/)
-Evaluation Date: 201X-XX-XX  
+Evaluation Date: 201X-XX-XX
 This module conforms to level AA WCAG 2.0 standards as required by the university's accessibility policy. For more information on the policy please visit: [https://ucomm.stanford.edu/policies/accessibility-policy.html](https://ucomm.stanford.edu/policies/accessibility-policy.html).
 
 Installation

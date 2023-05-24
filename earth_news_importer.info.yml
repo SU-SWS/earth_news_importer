@@ -2,5 +2,5 @@ name: 'Earth News Importer'
 type: module
 description: 'Migration process plugins for news import from Old Earth.'
 package: 'Stanford'
-version: 8.x-1.x-dev
-core_version_requirement: ^9
+version: 1.x-dev
+core_version_requirement: ^9 || ^10
