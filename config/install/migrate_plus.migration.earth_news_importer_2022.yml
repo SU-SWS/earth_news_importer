@@ -15,7 +15,7 @@ source:
   request_options:
     timeout: 60
   urls:
-    - 'https://earth.stanford.edu/export-news?year=2022'
+    - 'https://se3-stage.stanford.edu/export-news?year=2022'
   data_parser_plugin: json
   item_selector: nodes
   fields:
@@ -105,7 +105,7 @@ source:
     stanford_minimal_html: stanford_minimal_html
     image_path: 'public://media/earth_news/'
 process:
-  reset: 
+  reset:
     plugin: earth_news_paragraphs_delete
     method: process
     source: id
@@ -255,10 +255,15 @@ process:
     source: banner_media
     id_only: true
     field_media: field_media
-#  su_news_banner_media_caption: 
-#    plugin: callback
-#    callable: strip_tags
-#    source: banner_media_caption 
+  su_news_banner_media_caption:
+    -
+      plugin: callback
+      callable: strip_tags
+      source: banner_media_caption
+    -
+      plugin: substr
+      start: 0
+      length: 255
   su_news_source: news_source
 destination:
   plugin: 'entity:node'

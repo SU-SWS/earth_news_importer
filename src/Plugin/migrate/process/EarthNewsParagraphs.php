@@ -208,7 +208,7 @@ class EarthNewsParagraphs extends ProcessPluginBase {
         if (!empty($value['field_p_video_url'])) {
           $video_url = $value['field_p_video_url'];
           $mid = EarthNewsImporterUtility::lookupMediaByProperty('field_media_oembed_video',
-            $video_url, $value);
+            $video_url);
           if (empty($mid)) {
             $name = "";
             if (!empty($value['field_p_video_title'])) {
@@ -222,9 +222,9 @@ class EarthNewsParagraphs extends ProcessPluginBase {
           }
           if (!empty($mid)) {
             $sdss_mid = reset($mid);
-            if (!empty($sdss_mid['sdss-mid'])) {
+            if (!empty($sdss_mid)) {
               $paragraph_array['su_media_caption_media'] = [
-                'target_id' => strval($sdss_mid['sdss-mid']),
+                'target_id' => strval($sdss_mid),
               ];
             }
           }
@@ -369,7 +369,7 @@ class EarthNewsParagraphs extends ProcessPluginBase {
       }
 
       // responsive image
-      else if (str_contains($first_key, 'field_p_responsive_image')) {
+      else if (str_contains($first_key, 'field_p_responsive')) {
         $paragraph_array = [
           'type' => 'stanford_media_caption',
         ];
@@ -420,7 +420,221 @@ class EarthNewsParagraphs extends ProcessPluginBase {
         }
       }
 
-      // catch any unprocessed paragraphs here - used for debugging.
+      // filmstrip slide
+      else if (str_contains($first_key, 'field_p_filmstrip')) {
+        $paragraph_array = [
+          'type' => 'stanford_card',
+        ];
+        if (!empty($value['field_p_callout_wysiwyg'])) {
+          $paragraph_array['su_card_body'] = [
+            'value' => EarthNewsImporterUtility::replaceEmbeddedMediaUuid(
+              reset($value['field_p_callout_wysiwyg']),
+              $embedded_media
+            ),
+            'format' => 'stanford_html',
+          ];
+        }
+        if (!empty($value['field_p_callout_more_link'])) {
+          $paragraph_array['su_card_link'] = [
+            'uri' => $value['field_p_callout_more_link']['uri'],
+            'title' => $value['field_p_callout_more_link']['title'],
+            'options' => $value['field_p_callout_more_link']['options'],
+          ];
+        }
+        if (!empty($value['field_p_callout_title'])) {
+          $paragraph_array['su_card_header'] =
+            reset($value['field_p_callout_title']);
+        }
+      }
+
+      // import double film strip
+      else if (str_contains($first_key, 'field_p_doub')) {
+        if ($first_key === 'field_p_double_film_cards') {
+          if (!empty($value['field_p_double_film_cards'])) {
+            foreach ($value['field_p_double_film_cards'] as $banner_card) {
+              if (!empty($banner_card)) {
+                $paragraph_array = [
+                  'type' => 'stanford_card',
+                ];
+                if (!empty($banner_card['field_s_film_card_title'])) {
+                  $paragraph_array['su_card_header'] =
+                    reset($banner_card['field_s_film_card_title']);
+                }
+                if (!empty($banner_card['field_s_film_card_desc'])) {
+                  $paragraph_array['su_card_body'] = [
+                    'value' => EarthNewsImporterUtility::replaceEmbeddedMediaUuid(reset($banner_card['field_s_film_card_desc']),
+                      $embedded_media),
+                    'format' => 'stanford_html',
+                  ];
+                }
+                if (!empty($banner_card['field_s_film_card_link'])) {
+                  $paragraph_array['su_card_link'] = [
+                    'uri' => $banner_card['field_s_film_card_link']['uri'],
+                    'title' => $banner_card['field_s_film_card_link']['title'],
+                    'options' => $banner_card['field_s_film_card_link']['options'],
+                  ];
+                }
+                if (!empty($banner_card['field_s_film_card_media'])) {
+                  $responsive_media = reset($banner_card['field_s_film_card_media']);
+                  if (!empty($responsive_media['id'])) {
+                    $paragraph_array['su_card_media'] = [
+                      'target_id' => EarthNewsImporterUtility::replaceFieldMediaId($responsive_media['id'],
+                        $field_media),
+                    ];
+                  }
+                }
+              }
+            }
+          }
+        }
+        else {
+          if (!empty($value['field_p_doub_film_title'][0])) {
+            $paragraph_array = [
+              'type' => 'stanford_wysiwyg',
+              'su_wysiwyg_text' => [
+                'value' => '<h3>' . $value['field_p_doub_film_title'][0] . '</h3>',
+                'format' => 'stanford_html',
+              ],
+            ];
+          }
+        }
+      }
+
+      // banner links paragraphs
+      else if (str_contains($first_key, 'field_p_link_banner')) {
+        if ($first_key === 'field_p_link_banner_links') {
+          if (!empty($value['field_p_link_banner_links'])) {
+            foreach ($value['field_p_link_banner_links'] as $banner_card) {
+              if (!empty($banner_card)) {
+                $paragraph_array = [
+                  'type' => 'stanford_card',
+                ];
+                if (!empty($banner_card['field_p_link_item_subtext'])) {
+                  $paragraph_array['su_card_header'] =
+                    reset($banner_card['field_p_link_item_subtext']);
+                }
+                if (!empty($banner_card['field_p_link_item_text'])) {
+                  $paragraph_array['su_card_super_header'] =
+                    reset($banner_card['field_p_link_item_text']);
+                }
+                if (!empty($banner_card['field_p_link_item_url'])) {
+                  $paragraph_array['su_card_link'] = [
+                    'uri' => $banner_card['field_p_link_item_url']['uri'],
+                    'title' => $banner_card['field_p_link_item_url']['title'],
+                    'options' => $banner_card['field_p_link_item_url']['options'],
+                  ];
+                }
+              }
+            }
+          }
+        }
+        else {
+          $paragraph_array = [
+            'type' => 'stanford_banner',
+          ];
+          if (!empty($value['field_p_link_banner_media'])) {
+            $banner_media = reset($value['field_p_link_banner_media']);
+            if (!empty($banner_media['id'])) {
+              $paragraph_array['su_banner_image'] = [
+                'target_id' => EarthNewsImporterUtility::replaceFieldMediaId($banner_media['id'],
+                  $field_media),
+              ];
+            }
+          }
+          if (!empty($value['field_p_link_banner_title'])) {
+            $paragraph_array['su_banner_header'] = reset($value['field_p_link_banner_title']);
+          }
+          if (!empty($value['field_p_link_banner_description'])) {
+            $paragraph_array['su_sdss_banner_caption'] = [
+              'value' => reset($value['field_p_link_banner_description']),
+              'format' => 'stanford_html',
+            ];
+          }
+        }
+      }
+
+      // tall filmstrip
+      else if (str_contains($first_key, 'field_p_tall_filmstrip')) {
+        if ($first_key === 'field_p_tall_filmstrip_cards') {
+          if (!empty($value['field_p_tall_filmstrip_cards'])) {
+            foreach ($value['field_p_tall_filmstrip_cards'] as $banner_card) {
+              if (!empty($banner_card)) {
+                $paragraph_array = [
+                  'type' => 'stanford_card',
+                ];
+                if (!empty($value['field_p_tall_slide_desc'])) {
+                  $paragraph_array['su_card_body'] = [
+                    'value' => reset($value['field_p_tall_slide_desc']),
+                    'format' => 'stanford_html',
+                  ];
+                }
+                if (!empty($banner_card['field_p_tall_slide_title'])) {
+                  $paragraph_array['su_card_header'] =
+                    reset($banner_card['field_p_tall_slide_title']);
+                }
+                if (!empty($banner_card['field_p_tall_slide_subtitle'])) {
+                  $paragraph_array['su_card_super_header'] =
+                    reset($banner_card['field_p_tall_slide_subtitle']);
+                }
+                if (!empty($banner_card['field_p_tall_slide_link'])) {
+                  $paragraph_array['su_card_link'] = [
+                    'uri' => $banner_card['field_p_tall_slide_link_url']['uri'],
+                    'title' => $banner_card['field_p_tall_slide_link_url']['title'],
+                    'options' => $banner_card['field_p_tall_slide_link_url']['options'],
+                  ];
+                }
+                if (!empty($banner_card['field_p_tall_slide_media'])) {
+                  $responsive_media = reset($banner_card['field_p_tall_slide_media']);
+                  if (!empty($responsive_media['id'])) {
+                    $paragraph_array['su_card_media'] = [
+                      'target_id' => EarthNewsImporterUtility::replaceFieldMediaId($responsive_media['id'],
+                        $field_media),
+                    ];
+                  }
+                }
+              }
+            }
+          }
+        }
+        else {
+          $tall_text = "<div>";
+          if (!empty($value['field_p_tall_filmstrip_title'][0])) {
+            $tall_text .= "<h3>".$value['field_p_tall_filmstrip_title'][0] . "</h3>";
+          }
+          if (!empty($value['field_p_tall_filmstrip_desc'][0])) {
+            $tall_text .= $value['field_p_tall_filmstrip_desc'][0];
+          }
+          $tall_text .= "</div>";
+          $paragraph_array = [
+            'type' => 'stanford_wysiwyg',
+            'su_wysiwyg_text' => [
+              'value' =>  $tall_text,
+              'format' => 'stanford_html',
+            ],
+          ];
+        }
+      }
+
+      // link item paragraph
+      else if (str_contains($first_key, 'field_p_link_item')) {
+        $paragraph_array = [
+          'type' => 'stanford_card',
+        ];
+        if (!empty($value['field_p_link_item_text'])) {
+          $paragraph_array['su_card_header'] =
+            reset($value['field_p_link_item_text']);
+        }
+        if (!empty($value['field_p_link_item_url'])) {
+          $paragraph_array['su_card_link'] = [
+            'uri' => $value['field_p_link_item_url']['uri'],
+            'title' => $value['field_p_link_item_url']['title'],
+            'options' => $value['field_p_link_item_url']['options'],
+          ];
+        }
+
+      }
+
+        // catch any unprocessed paragraphs here - used for debugging.
       else {
         $xyz = 1;
       }
