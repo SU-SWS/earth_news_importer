@@ -1,0 +1,276 @@
+langcode: en
+status: true
+dependencies: {  }
+id: earth_news_importer_2013
+class: null
+field_plugin_method: null
+cck_plugin_method: null
+migration_tags: {  }
+migration_group: earth_news_importer
+label: 'earth news importer 2013'
+source:
+  track_changes: true
+  plugin: url
+  data_fetcher_plugin: http
+  request_options:
+    timeout: 60
+  urls:
+    - 'https://se3-stage.stanford.edu/export-news?year=2013'
+  data_parser_plugin: json
+  item_selector: nodes
+  fields:
+    -
+      name: id
+      label: ID
+      selector: nid
+    -
+      name: title
+      label: Title
+      selector: title
+    -
+      name: alias
+      label: Alias
+      selector: path/0/alias
+    -
+      name: earth_matters_topics
+      label: 'Earth Matters Topics'
+      selector: field_earth_matters_topic
+    -
+      name: author
+      label: Author
+      selector: field_s_news_author/0/value
+    -
+      name: news_category
+      label: 'News Category'
+      selector: field_s_news_category
+    -
+      name: news_challenge
+      label: 'News Challenge Area'
+      selector: field_s_news_challenge
+    -
+      name: news_date
+      label: 'News Date'
+      selector: field_s_news_date/0/value
+    -
+      name: departments
+      label: Department
+      selector: field_s_news_department
+    -
+      name: earth_tags
+      label: 'Earth Tags'
+      selector: field_s_news_earth_tags
+    -
+      name: feature_media
+      label: 'Feature Media'
+      selector: field_s_news_feat_media
+    -
+      name: rich_content
+      label: Rich Content
+      selector: field_s_news_rich_content
+    -
+      name: earth_teaser
+      label: 'Earth News Teaser'
+      selector: field_s_news_teaser/0
+    -
+      name: earth_summary
+      label: 'Earth News Summary'
+      selector: field_s_news_summary/0
+    -
+      name: banner_media
+      label: 'Banner Media'
+      selector: field_s_news_top_media/0/field_p_hero_banner_media
+    -
+      name: banner_media_caption
+      label: 'Banner Media Caption'
+      selector: field_s_news_top_media/0/field_p_hero_banner_photo_credit/0
+    -
+      name: news_source
+      label: 'News Source'
+      selector: field_s_news_source
+    -
+      name: embedded_media
+      label: Embedded Media
+      selector: embedded_media
+    -
+      name: field_media
+      label: Field Media
+      selector: field_media
+  ids:
+    id:
+      type: string
+  constants:
+    one: 1
+    type: stanford_news
+    stanford_html: stanford_html
+    stanford_minimal_html: stanford_minimal_html
+    image_path: 'public://media/earth_news/'
+    base_url: 'https://earth.stanford.edu'
+process:
+  reset:
+    plugin: earth_news_paragraphs_delete
+    method: process
+    source: id
+  embedded_media:
+    plugin: earth_media_image
+    source: embedded_media
+    skip_on_error: true
+    id_only: true
+    reuse: true
+    uid: 0
+    destination: constants/image_path
+    embed: true
+  field_media:
+    plugin: earth_media_image
+    source: field_media
+    skip_on_error: true
+    id_only: true
+    reuse: true
+    uid: 0
+    destination: constants/image_path
+    embed: false
+  status: constants/one
+  type: constants/type
+  title: title
+  path/alias: alias
+  su_sdss_magazine_topics:
+    -
+      plugin: skip_on_empty
+      method: process
+      source: earth_matters_topics
+    -
+      plugin: sub_process
+      process:
+        target_id:
+          plugin: entity_generate
+          value_key: name
+          bundle_key: vid
+          bundle: sdss_magazine_topics
+          entity_type: taxonomy_term
+          ignore_case: true
+          source: term_name
+  su_news_byline: author
+  su_news_topics:
+    -
+      plugin: skip_on_empty
+      method: process
+      source: news_category
+    -
+      plugin: sub_process
+      process:
+        target_id:
+          plugin: entity_generate
+          value_key: name
+          bundle_key: vid
+          bundle: stanford_news_topics
+          entity_type: taxonomy_term
+          ignore_case: true
+          source: term_name
+  su_sdss_news_research_area:
+    -
+      plugin: skip_on_empty
+      method: process
+      source: news_challenge
+    -
+      plugin: sub_process
+      process:
+        target_id:
+          plugin: entity_generate
+          value_key: name
+          bundle_key: vid
+          bundle: sdss_research_areas
+          entity_type: taxonomy_term
+          ignore_case: true
+          source: term_name
+  su_news_publishing_date/value:
+    -
+      plugin: skip_on_empty
+      source: news_date
+      method: process
+    -
+      plugin: substr
+      start: 0
+      length: 10
+      callable: strtotime
+      source: news_date
+  su_sdss_news_organization:
+    -
+      plugin: skip_on_empty
+      method: process
+      source: departments
+    -
+      plugin: sub_process
+      process:
+        target_id:
+          plugin: entity_generate
+          value_key: name
+          bundle_key: vid
+          bundle: sdss_organization
+          entity_type: taxonomy_term
+          ignore_case: true
+          source: term_name
+  su_shared_tags:
+    -
+      plugin: skip_on_empty
+      method: process
+      source: earth_tags
+    -
+      plugin: sub_process
+      process:
+        target_id:
+          plugin: entity_generate
+          value_key: name
+          bundle_key: vid
+          bundle: su_shared_tags
+          entity_type: taxonomy_term
+          ignore_case: true
+          source: term_name
+  su_news_featured_media:
+      plugin: earth_media_field_id
+      source: feature_media
+      id_only: true
+      field_media: field_media
+  su_news_components:
+      plugin: earth_news_paragraphs
+      source: rich_content
+      skip_on_error: true
+      id_only: true
+      reuse: true
+      uid: 0
+      field_media: field_media
+      embedded_media: embedded_media
+  dek:
+    plugin: earth_teaser_or_summary
+    method: process
+    earth_teaser: earth_teaser
+    earth_summary: earth_summary
+    source: null
+  su_sdss_news_dek_long/value:
+    plugin: earth_embedded_media_body
+    method: process
+    source: null
+    dek: dek
+    embedded_media: embedded_media
+  su_sdss_news_dek_long/format : constants/stanford_minimal_html
+  su_news_banner:
+    plugin: earth_media_field_id
+    source: banner_media
+    id_only: true
+    field_media: field_media
+  su_news_banner_media_caption:
+    -
+      plugin: callback
+      callable: strip_tags
+      source: banner_media_caption
+    -
+      plugin: substr
+      start: 0
+      length: 255
+  su_news_source: news_source
+  su_sdss_import/url:
+    plugin: concat
+    source:
+      constants/base_url
+      alias
+destination:
+  plugin: 'entity:node'
+migration_dependencies: {  }
