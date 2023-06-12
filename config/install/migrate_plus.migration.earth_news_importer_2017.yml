@@ -15,7 +15,7 @@ source:
   request_options:
     timeout: 60
   urls:
-    - 'https://se3-stage.stanford.edu/export-news?year=2017'
+    - 'https://earth.stanford.edu/export-news?year=2017'
   data_parser_plugin: json
   item_selector: nodes
   fields:
@@ -83,6 +83,10 @@ source:
       name: news_source
       label: 'News Source'
       selector: field_s_news_source
+    -
+      name: related_people
+      label: 'Related People'
+      selector: field_news_related_people
     -
       name: embedded_media
       label: 'Embedded Media'
@@ -261,6 +265,9 @@ process:
     source:
       - constants/base_url
       - alias
+  su_sdss_person_ref:
+    plugin: earth_related_people
+    source: related_people
 destination:
   plugin: 'entity:node'
 migration_dependencies: {  }
