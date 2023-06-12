@@ -65,7 +65,7 @@ source:
       selector: field_s_news_feat_media
     -
       name: rich_content
-      label: Rich Content
+      label: 'Rich Content'
       selector: field_s_news_rich_content
     -
       name: earth_teaser
@@ -78,22 +78,18 @@ source:
     -
       name: banner_media
       label: 'Banner Media'
-      selector: field_s_news_top_media/0/field_p_hero_banner_media
-    -
-      name: banner_media_caption
-      label: 'Banner Media Caption'
-      selector: field_s_news_top_media/0/field_p_hero_banner_photo_credit/0
+      selector: field_s_news_top_media
     -
       name: news_source
       label: 'News Source'
       selector: field_s_news_source
     -
       name: embedded_media
-      label: Embedded Media
+      label: 'Embedded Media'
       selector: embedded_media
     -
       name: field_media
-      label: Field Media
+      label: 'Field Media'
       selector: field_media
   ids:
     id:
@@ -104,6 +100,7 @@ source:
     stanford_html: stanford_html
     stanford_minimal_html: stanford_minimal_html
     image_path: 'public://media/earth_news/'
+    base_url: 'https://earth.stanford.edu'
 process:
   reset:
     plugin: earth_news_paragraphs_delete
@@ -224,19 +221,19 @@ process:
           ignore_case: true
           source: term_name
   su_news_featured_media:
-      plugin: earth_media_field_id
-      source: feature_media
-      id_only: true
-      field_media: field_media
+    plugin: earth_media_field_id
+    source: feature_media
+    id_only: true
+    field_media: field_media
   su_news_components:
-      plugin: earth_news_paragraphs
-      source: rich_content
-      skip_on_error: true
-      id_only: true
-      reuse: true
-      uid: 0
-      field_media: field_media
-      embedded_media: embedded_media
+    plugin: earth_news_paragraphs
+    source: rich_content
+    skip_on_error: true
+    id_only: true
+    reuse: true
+    uid: 0
+    field_media: field_media
+    embedded_media: embedded_media
   dek:
     plugin: earth_teaser_or_summary
     method: process
@@ -249,22 +246,21 @@ process:
     source: null
     dek: dek
     embedded_media: embedded_media
-  su_sdss_news_dek_long/format : constants/stanford_minimal_html
+  su_sdss_news_dek_long/format: constants/stanford_minimal_html
   su_news_banner:
-    plugin: earth_media_field_id
+    plugin: earth_banner_media
     source: banner_media
     id_only: true
     field_media: field_media
   su_news_banner_media_caption:
-    -
-      plugin: callback
-      callable: strip_tags
-      source: banner_media_caption
-    -
-      plugin: substr
-      start: 0
-      length: 255
+    plugin: earth_banner_media_caption
+    source: banner_media
   su_news_source: news_source
+  su_sdss_import_source:
+    plugin: concat
+    source:
+      - constants/base_url
+      - alias
 destination:
   plugin: 'entity:node'
 migration_dependencies: {  }
