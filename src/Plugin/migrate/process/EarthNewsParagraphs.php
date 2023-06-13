@@ -198,6 +198,10 @@ class EarthNewsParagraphs extends ProcessPluginBase {
         if (!empty($value['field_p_postcard_more'])) {
           $values['link'] = $value['field_p_postcard_more'];
         }
+        if (!empty($value['field_p_postcard_media'])) {
+          $values['media'] = reset($value['field_p_postcard_media']);
+        }
+
         $paragraph_array = $this->build_su_card($values);
       }
 
@@ -455,7 +459,7 @@ class EarthNewsParagraphs extends ProcessPluginBase {
       else if (str_contains($first_key, 'field_p_link_banner')) {
         if ($first_key === 'field_p_link_banner_links') {
           if (!empty($value['field_p_link_banner_links'])) {
-            $banner_card = reset($value('field_p_link_banner_links'));
+            $banner_card = reset($value['field_p_link_banner_links']);
             $values = [];
             if (!empty($banner_card['field_p_link_item_subtext'])) {
                   $values['header'] =
@@ -547,7 +551,7 @@ class EarthNewsParagraphs extends ProcessPluginBase {
           $values['header'] = reset($value['field_p_link_item_text']);
         }
         if (!empty($value['field_p_link_item_url'])) {
-          $values['link'] = value['field_p_link_item_url'];
+          $values['link'] = $value['field_p_link_item_url'];
         }
         $paragraph_array = $this->build_su_card($values);
       }

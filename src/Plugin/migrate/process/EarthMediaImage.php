@@ -82,6 +82,9 @@ class EarthMediaImage extends FileImport {
         if (!empty($value[$key])) {
           $property = $value[$key];
         }
+        if ($key === 'alt' && !empty($property) && strlen($property) > 512) {
+          $property = substr($property, 0, 512);
+        }
         if ($key == 'title' && empty($property)) {
           $property = $value['name'];
         }
@@ -120,11 +123,8 @@ class EarthMediaImage extends FileImport {
       ];
       $embed = !empty($this->configuration['embed']);
       return EarthNewsImporterUtility::createNewMediaEntity('video', $newValues, $embed);
-
-    // Otherwise, do nothing, but we have a breakpoint here in debugging to catch other media types.
-    } else {
-      $xyz = 1; // some other media
     }
+    return null;
   }
 
 }

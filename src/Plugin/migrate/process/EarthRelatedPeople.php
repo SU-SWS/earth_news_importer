@@ -27,9 +27,6 @@ class EarthRelatedPeople extends ProcessPluginBase {
   public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
     if (!empty($value) && is_array($value)) {
       $return_array = [];
-      if (count($value) > 1) {
-        $xyz = 1;
-      }
       foreach ($value as $person) {
         if (!empty($person['display_name'])) {
           $display_name = $person['display_name'];

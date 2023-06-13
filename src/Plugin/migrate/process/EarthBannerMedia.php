@@ -23,8 +23,15 @@ class EarthBannerMedia extends ProcessPluginBase {
    */
   public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
 
-    if (!empty($value['field_p_hero_banner_media'])) {
-      $banner_media = reset($value['field_p_hero_banner_media']);
+    if (!empty($value['field_p_hero_banner_media']) ||
+      !empty($value['field_p_responsive_media'])) {
+      $banner_media = null;
+      if (!empty($value['field_p_hero_banner_media'])) {
+        $banner_media = reset($value['field_p_hero_banner_media']);
+      }
+      else if (!empty($value['field_p_responsive_media'])) {
+        $banner_media = reset($value['field_p_responsive_media']);
+      }
       if (!empty($banner_media['type']) && $banner_media['type'] === 'image'
         && !empty($banner_media['id'])) {
         $field_media = [];
@@ -35,7 +42,6 @@ class EarthBannerMedia extends ProcessPluginBase {
         return ['target_id' => $target_id];
       }
       else {
-        $xyz = 1; //banner media not image?
         return null;
       }
     }
@@ -58,9 +64,6 @@ class EarthBannerMedia extends ProcessPluginBase {
       $target_id =
         EarthNewsImporterUtility::createNewMediaEntity('video', $newValues, $embed);
       return ['target_id' => reset($target_id)];
-    }
-    else {
-      $xyz = 1; // some other media field
     }
     return null;
   }

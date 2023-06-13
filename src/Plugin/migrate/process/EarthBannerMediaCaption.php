@@ -36,6 +36,7 @@ class EarthBannerMediaCaption extends ProcessPluginBase {
       $text = MailFormatHelper::htmlToText($text);
       $text = htmlspecialchars($text);
       $text = substr($text, 0, 255);
+      $text = preg_replace('/[^a-zA-Z0-9 \.\,]/','', $text);
       return $text;
     }
     return $value;

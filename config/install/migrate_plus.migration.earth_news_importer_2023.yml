@@ -99,6 +99,7 @@ source:
     id:
       type: string
   constants:
+    zero: 0
     one: 1
     type: stanford_news
     stanford_html: stanford_html
@@ -128,7 +129,7 @@ process:
     uid: 0
     destination: constants/image_path
     embed: false
-  status: constants/one
+  status: constants/zero
   type: constants/type
   title: title
   path/alias: alias
