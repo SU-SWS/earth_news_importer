@@ -62,13 +62,12 @@ class EarthNewsImporterUtility {
       // For each field media entity imported for the node, return a match.
       foreach ($field_media as $media_item) {
         if (!empty($media_item[$earth_mid])) {
-          $sdss_mid = $media_item[$earth_mid]['sdss-mid'];
-          return strval($sdss_mid);
+          return $media_item[$earth_mid]['sdss-mid'];
         }
       }
     }
-    // Return the original if not found.
-    return $earth_mid;
+    // Return null if not found.
+    return null;
   }
 
   /**
@@ -102,15 +101,13 @@ class EarthNewsImporterUtility {
    *   Whether the media entity is an image, a video url, or a file.
    * @param array $fieldValues
    *   Array of fields to be included in the media entity.
-   * @param array $value
-   *   Array of import values for the node, where we might find an embed uuid.
    * @param boolean $embed
    *   Tells us whether to look for an embed code.
    *
    * @return array
    *   Information needed about the new media entity.
    */
-  public static function createNewMediaEntity($bundle = "", $fieldValues = [], $value=[], $embed = false) {
+  public static function createNewMediaEntity($bundle = "", $fieldValues = [], $embed = false) {
 
     // Make sure we have something to do.
     if (!empty($bundle) && !empty($fieldValues)) {
@@ -122,23 +119,13 @@ class EarthNewsImporterUtility {
       }
       $media_entity->save();
       // If this is an embedded entity, return its old Earth and new UUIDs
-      if ($embed && !empty($value['embed'])) {
-        $uuid = $media_entity->uuid();
-        return [
-          $value['embed'] => [
-            'sdss-mid' => $media_entity->id(),
-            'sdss-uuid' => $uuid
-          ]
-        ];
+      $return_value = [
+        'sdss-mid' => $media_entity->id(),
+      ];
+      if ($embed) {
+        $return_value['sdss-uuid'] = $media_entity->uuid();
       }
-      // Otherwise just return its new entity id.
-      else {
-        return [
-          $value['mid'] => [
-            'sdss-mid' => $media_entity->id(),
-          ]
-        ];
-      }
+      return $return_value;
     }
     return null;
   }
@@ -150,38 +137,27 @@ class EarthNewsImporterUtility {
    *   Name of the property we are searching by.
    * @param string $prop_value
    *   Value of the property.
-   * @param array $value
-   *   Array of import values for the node, where we might find an embed uuid.
    * @param boolean $embed
    *   Tells us whether to look for an embed code.
    *
    * @return array
    *   Information needed about the new media entity.
    */
-  public static function lookupMediaByProperty($prop_name = "", $prop_value = "", $value = [], $embed = false) {
+  public static function lookupMediaByProperty($prop_name = "", $prop_value = "", $embed = false) {
     if (!empty($prop_name) && !empty($prop_value)) {
       $mids = \Drupal::entityTypeManager()->getStorage('media')
         ->loadByProperties([$prop_name => $prop_value]);
       $existing_mid = array_key_first($mids);
       if (!empty($existing_mid)) {
-        if ($embed && !empty($value['embed'])) {
+        $return_value = [
+          'sdss-mid' => $existing_mid,
+        ];
+        if ($embed) {
           /** @var \Drupal\media\Entity\Media $mediaObj */
           $mediaObj = $mids[$existing_mid];
-          $newuuid = $mediaObj->uuid();
-          return [
-            $value['embed'] => [
-              'sdss-mid' => $existing_mid,
-              'sdss-uuid' => $newuuid,
-            ]
-          ];
+          $return_value['sdss-uuid'] = $mediaObj->uuid();
         }
-        else {
-          return [
-            $value['mid'] => [
-              'sdss-mid' => $existing_mid,
-            ]
-          ];
-        }
+        return $return_value;
       }
     }
     return null;

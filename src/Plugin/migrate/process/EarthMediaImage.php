@@ -40,32 +40,40 @@ class EarthMediaImage extends FileImport {
    */
   public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
 
-    if (empty($value['type'])) {
-      return NULL;
+    $embed = !empty($this->configuration['embed']);
+    $earth_id = "";
+    if ($embed && !empty($value['embed'])) {
+      $earth_id = $value['embed'];
+    }
+    else if (!empty($value['mid'])) {
+      $earth_id = strval($value['mid']);
+    }
+
+    if (empty($value['type']) || empty($earth_id)) {
+      return null;
     }
 
     // Are we importing an image?
     if ($value['type'] == 'image') {
       // Get the URL to the image or return null if empty
       if (empty($value['url']) || empty($value['name'])) {
-        return NULL;
+        return null;
       }
-
       // Check if we already have the image and return it if we do.
       $file_name = $value['name'];
-      $file_name = str_replace(" ", "%20", $file_name);
-      $file_info = pathinfo($value['url']);
+      $url = $value['url'];
+      $file_info = pathinfo($url);
       if (!empty($file_info['basename']) && $file_info['basename'] !== $file_name) {
         $file_name = $file_info['basename'];
       }
-      $mid = EarthNewsImporterUtility::lookupMediaByProperty('name', $file_name, $value);
+      $mid = EarthNewsImporterUtility::lookupMediaByProperty(
+        'name', $file_name, $embed);
       if (!empty($mid)) {
-        return $mid;
+        return [$earth_id => $mid];
       }
 
       // The parent will download the image (if necessary) and get its fid.
       $this->configuration['id_only'] = FALSE;
-      $url = $value['url']; //str_replace("earth.stanford.edu", "se3-stage.stanford.edu", $value['url']);
       $newvalue = parent::transform($url, $migrate_executable, $row,
         $destination_property);
       // Add the image field specific sub fields.
@@ -73,6 +81,9 @@ class EarthMediaImage extends FileImport {
         $property = NULL;
         if (!empty($value[$key])) {
           $property = $value[$key];
+        }
+        if ($key === 'alt' && !empty($property) && strlen($property) > 512) {
+          $property = substr($property, 0, 512);
         }
         if ($key == 'title' && empty($property)) {
           $property = $value['name'];
@@ -84,8 +95,10 @@ class EarthMediaImage extends FileImport {
 
       // Create new media entity.
       $newValues = ['field_media_image' => $newvalue];
-      $embed = !empty($this->configuration['embed']);
-      return EarthNewsImporterUtility::createNewMediaEntity('image', $newValues, $value, $embed);
+      $mid = EarthNewsImporterUtility::createNewMediaEntity('image', $newValues, $embed);
+      if (!empty($mid)) {
+        return [$earth_id => $mid];
+      }
     }
 
     // Otherwise are we importing video?
@@ -97,8 +110,8 @@ class EarthMediaImage extends FileImport {
 
       // Check if we already have the video and return its mid if we do.
       $video_value = $value['value'];
-      $mid = EarthNewsImporterUtility::lookupMediaByProperty('field_media_oembed_video.value',
-        $video_value, $value);
+      $mid = EarthNewsImporterUtility::lookupMediaByProperty(
+        'field_media_oembed_video.value', $video_value, $embed);
       if (!empty($mid)) {
         return $mid;
       }
@@ -109,12 +122,9 @@ class EarthMediaImage extends FileImport {
         'name' => $value['name'],
       ];
       $embed = !empty($this->configuration['embed']);
-      return EarthNewsImporterUtility::createNewMediaEntity('video', $newValues, $value, $embed);
-
-    // Otherwise, do nothing, but we have a breakpoint here in debugging to catch other media types.
-    } else {
-      $xyz = 1; // some other media
+      return EarthNewsImporterUtility::createNewMediaEntity('video', $newValues, $embed);
     }
+    return null;
   }
 
 }
