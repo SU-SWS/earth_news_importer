@@ -328,18 +328,21 @@ class EarthNewsParagraphs extends ProcessPluginBase {
 
       // import section header
       else if (str_contains($first_key, 'field_p_section_header')) {
-        $paragraph_array = [
-          'type' => 'stanford_banner',
-        ];
+        $section_text = "";
         if (!empty($value['field_p_section_header_title'])) {
-          $paragraph_array['su_banner_header'] = reset($value['field_p_section_header_title']);
+          $section_text .= "<h3>" . reset($value['field_p_section_header_title']) . '</h3>';
+          //$paragraph_array['su_banner_header'] = reset($value['field_p_section_header_title']);
         }
         if (!empty($value['field_p_section_header_desc'])) {
-          $paragraph_array['su_banner_body'] = [
-            'value' => reset($value['field_p_section_header_desc']),
-            'format' => 'stanford_html',
-          ];
+          $section_text .= reset($value['field_p_section_header_desc']);
         }
+        $paragraph_array = [
+          'type' => 'stanford_wysiwyg',
+          'su_wysiwyg_text' => [
+            'value' =>  $section_text,
+            'format' => 'stanford_html',
+          ]
+        ];
       }
 
       // responsive image
@@ -387,9 +390,11 @@ class EarthNewsParagraphs extends ProcessPluginBase {
         if ($first_key === "field_p_filmstrip_title") {
           $paragraph_array = [
             'type' => 'stanford_wysiwyg',
-            'value' => '<h3>' .
-              reset($value['field_p_filmstrip_title']) . '</h3>',
-            'format' => 'stanford_html',
+            'su_wysiwyg_text' => [
+              'value' => '<h3>' .
+                reset($value['field_p_filmstrip_title']) . '</h3>',
+              'format' => 'stanford_html',
+            ],
           ];
         }
         else if ($first_key === 'field_p_filmstrip_slide') {
