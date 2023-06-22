@@ -26,6 +26,11 @@ class EarthBannerMediaCaption extends ProcessPluginBase {
    */
   public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
     $text = "";
+    if (empty($value)) {
+      if (!empty($this->configuration['banner_media'])) {
+        $value = reset($row->getSourceProperty($this->configuration['banner_media']));
+      }
+    }
     if (!empty($value['field_p_responsive_image_cred'])) {
       $text = reset($value['field_p_responsive_image_cred']);
     }
@@ -33,11 +38,15 @@ class EarthBannerMediaCaption extends ProcessPluginBase {
       $text = reset($value['field_p_hero_banner_photo_credit']);
     }
     if (!empty($text)) {
-      $text = MailFormatHelper::htmlToText($text);
-      $text = htmlspecialchars($text);
-      $text = substr($text, 0, 255);
-      $text = preg_replace('/[^a-zA-Z0-9 \.\,]/','', $text);
-      return $text;
+      if ($this->configuration['plaintext']) {
+        $text = MailFormatHelper::htmlToText($text);
+        $text = htmlspecialchars($text);
+        $text = substr($text, 0, 255);
+        $value = preg_replace('/[^a-zA-Z0-9 \.\,]/', '', $text);
+      }
+      else {
+        $value = $text;
+      }
     }
     return $value;
    }
