@@ -26,20 +26,24 @@ class EarthBannerMediaCaption extends ProcessPluginBase {
    */
   public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
     $text = "";
+    if (empty($value)) {
+      if (!empty($this->configuration['banner_media'])) {
+        $value = $row->getSourceProperty($this->configuration['banner_media']);
+      }
+    }
     if (!empty($value['field_p_responsive_image_cred'])) {
       $text = reset($value['field_p_responsive_image_cred']);
     }
     else if (!empty($value['field_p_hero_banner_photo_credit'])) {
       $text = reset($value['field_p_hero_banner_photo_credit']);
     }
-    if (!empty($text)) {
+    if (!empty($text) && $this->configuration['plaintext']) {
       $text = MailFormatHelper::htmlToText($text);
       $text = htmlspecialchars($text);
       $text = substr($text, 0, 255);
-      $text = preg_replace('/[^a-zA-Z0-9 \.\,]/','', $text);
-      return $text;
+      $text = preg_replace('/[^a-zA-Z0-9 \.\,]/', '', $text);
     }
-    return $value;
+    return $text;
    }
 
 }

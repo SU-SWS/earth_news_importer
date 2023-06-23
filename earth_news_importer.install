@@ -1,0 +1,30 @@
+<?php
+
+/**
+ * @file
+ * earth_news_importer.install
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function earth_news_importer_uninstall() {
+  // Delete the news migration configurations.
+  $configFactory = \Drupal::configFactory();
+  $migrations = $configFactory->listAll('migrate_plus.migration.earth_news_importer');
+  foreach ($migrations as $migration) {
+    $configFactory->getEditable($migration)->delete();
+  }
+  // Delete the configuration group.
+  $configFactory->getEditable('migrate_plus.migration_group.earth_news_importer')->delete();
+
+  $db = \Drupal::database();
+  // Delete the old migration map and message tables.
+  $tables = array_merge($db->schema()
+    ->findTables('migrate_map_earth_news_importer%'),
+    $db->schema()->findTables('migrate_message_earth_news_importer%'));
+  foreach ($tables as $table) {
+    $db->schema()->dropTable($table);
+  }
+
+}
