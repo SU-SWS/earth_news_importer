@@ -260,6 +260,20 @@ process:
   su_news_banner_media_caption:
     plugin: earth_banner_media_caption
     source: banner_media
+    plaintext: true
+  long_caption:
+    plugin: earth_banner_media_caption
+    method: process
+    source: null
+    banner_media: banner_media/0
+    plaintext: false
+  su_sdss_news_banner_caption/value:
+    plugin: earth_embedded_media_body
+    method: process
+    source: null
+    dek: long_caption
+    embedded_media: embedded_media
+  su_sdss_news_banner_caption/format: constants/stanford_minimal_html
   su_news_source: news_source
   su_sdss_import_source:
     plugin: concat
@@ -271,4 +285,6 @@ process:
     source: related_people
 destination:
   plugin: 'entity:node'
+  overwrite_properties:
+    - fake-field-to-make-others-read-write
 migration_dependencies: {  }
